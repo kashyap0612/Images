@@ -4,9 +4,8 @@ supabase
 playwright
 beautifulsoup4
 requests
-transformers
-torch
-torchvision
+huggingface_hub
+ddgs
 pillow
 tqdm
 python-multipart

@@ -1,12 +1,12 @@
-from playwright.sync_api import sync_playwright
-from urllib.parse import quote, urlparse
+from ddgs import DDGS
+from urllib.parse import urlparse
 
 def filter_urls(links: list, limit: int) -> list:
     ignored_domains = [
         "google.", "youtube.com", "facebook.com", "twitter.com", 
         "instagram.com", "linkedin.com", "pinterest.com", "github.com", 
         "wikipedia.org", "w3schools.com", "reddit.com", "quora.com",
-        "stackoverflow.com", "schema.org", "gravatar.com"
+        "stackoverflow.com", "schema.org", "gravatar.com", "duckduckgo.com"
     ]
     ignored_extensions = (".pdf", ".zip", ".exe", ".png", ".jpg", ".jpeg", ".svg", ".gif", ".json", ".txt")
     
@@ -38,35 +38,22 @@ def filter_urls(links: list, limit: int) -> list:
 
 def search_google_links(query: str, limit: int = 10) -> list:
     """
-    Searches Google for the target query and uses heuristic filters
-    to extract a set of high-quality website URLs.
+    Searches DuckDuckGo using the robust ddgs API.
+    Bypasses automated browser checks and blocks entirely.
     """
-    search_url = f"https://www.google.com/search?q={quote(query)}"
     links = []
-    
-    with sync_playwright() as p:
-        # Launch browser headlessly for server/background environment
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-        page = context.new_page()
-        try:
-            print(f"Searching Google for: '{query}'")
-            page.goto(search_url, wait_until="domcontentloaded", timeout=15000)
-            
-            # Extract all anchor links
-            hrefs = page.evaluate("""
-            () => {
-                return [...document.querySelectorAll("a")]
-                    .map(a => a.href)
-                    .filter(href => href.startsWith("http"));
-            }
-            """)
-            links = list(dict.fromkeys(hrefs))
-        except Exception as e:
-            print(f"Error during Google search automation: {e}")
-        finally:
-            browser.close()
-            
+    try:
+        print(f"Searching DuckDuckGo API for: '{query}'")
+        with DDGS() as ddgs:
+            results = ddgs.text(query, max_results=limit * 2)
+            if results:
+                for r in results:
+                    href = r.get("href")
+                    if href:
+                        links.append(href)
+                        
+        print(f"DuckDuckGo API extracted links: {links}")
+    except Exception as e:
+        print(f"Error during DuckDuckGo API search: {e}")
+        
     return filter_urls(links, limit)
