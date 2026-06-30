@@ -1,5 +1,5 @@
 # Use Microsoft's official Playwright image which has Python and all browser system dependencies pre-installed
-FROM mcr.microsoft.com/playwright/python:v1.41.1-jammy
+FROM mcr.microsoft.com/playwright/python:v1.61.0-jammy
 
 WORKDIR /app
 
