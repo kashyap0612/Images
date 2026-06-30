@@ -1,0 +1,43 @@
+# Secrets & Environments
+*.env
+.env
+.env.local
+.env.*.local
+
+# Python Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env/
+ENV/
+*.egg-info/
+*.egg
+.installed.cfg
+temp_*
+html_pages/
+screenshots/
+downloaded_images/
+website.html
+*.json
+!package.json
+!website_urls.json
+!image_urls.json
+!browser_history.json
+# Note: Keep the template config JSONs if needed, otherwise ignore them.
+# We ignore generated JSON logs:
+actions_results.txt
+
+# Node Frontend
+node_modules/
+dist/
+.vite/
+.eslintcache
+.stylelintcache
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
