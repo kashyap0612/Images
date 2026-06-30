@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+supabase
+playwright
+beautifulsoup4
+requests
+transformers
+torch
+torchvision
+pillow
+tqdm
+python-multipart
+python-dotenv
