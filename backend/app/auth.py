@@ -1,8 +1,10 @@
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_supabase_client
+from typing import Optional
 
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
     token = credentials.credentials
@@ -22,3 +24,11 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Could not validate credentials: {str(e)}"
         )
+
+def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] = Security(optional_security)):
+    if credentials is None:
+        return None
+    try:
+        return get_current_user(credentials)
+    except HTTPException:
+        return None

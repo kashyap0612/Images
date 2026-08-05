@@ -1,4 +1,4 @@
-# AutoDataset 🚀 — Automated Dataset Creation & CLIP Curation Engine
+# AutoDataset 🚀 — Automated Evaluation Dataset Creation & CLIP Curation Engine
 
 AutoDataset is a modern full-stack application designed to automate the process of building clean, labeled computer vision datasets. Users simply input a query (e.g., `"Frog"`, `"luxury car"`, `"golden retriever"`), and the pipeline crawls the web, extracts images, classifies them in real-time using OpenAI's **CLIP** model, and uploads the verified dataset directly to Supabase.
 

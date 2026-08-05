@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException, status
+from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from app.auth import get_current_user
+from app.auth import get_current_user, get_optional_user
 from app.database import get_supabase_client
 from app.pipeline.runner import run_scraping_pipeline
 
@@ -25,9 +25,10 @@ def health_check():
 
 @app.post("/api/jobs", status_code=status.HTTP_201_CREATED)
 def create_job(
+    request: Request,
     payload: JobCreate,
     background_tasks: BackgroundTasks,
-    user=Depends(get_current_user)
+    user=Depends(get_optional_user)
 ):
     """
     Submits a search query, creates a job record in Supabase DB,
@@ -39,9 +40,28 @@ def create_job(
         
     supabase = get_supabase_client()
     try:
+        user_id = user.id if user else None
+        
+        # Guest IP Rate Limiting
+        if not user:
+            client_ip = request.client.host if request.client else "unknown"
+            
+            # Check current extraction count for this IP
+            res = supabase.table("guest_limits").select("extractions_count").eq("ip_address", client_ip).execute()
+            current_count = res.data[0]["extractions_count"] if res.data else 0
+            
+            if current_count >= 2:
+                raise HTTPException(status_code=429, detail="Guest extraction limit reached. Please create an account for unlimited access.")
+                
+            # Upsert updated count
+            supabase.table("guest_limits").upsert({
+                "ip_address": client_ip,
+                "extractions_count": current_count + 1
+            }).execute()
+
         # 1. Register job in database
         job_data = {
-            "user_id": user.id,
+            "user_id": user_id,
             "query": query_str,
             "status": "pending",
             "progress": 0,
@@ -79,7 +99,7 @@ def list_jobs(user=Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/jobs/{job_id}")
-def get_job_details(job_id: str, user=Depends(get_current_user)):
+def get_job_details(job_id: str, user=Depends(get_optional_user)):
     """Retrieves the status, progress, and classified images for a specific job."""
     supabase = get_supabase_client()
     try:
@@ -90,12 +110,13 @@ def get_job_details(job_id: str, user=Depends(get_current_user)):
             
         job = job_res.data[0]
         
-        # Security check: verify this belongs to the logged-in user
-        if job["user_id"] != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied to this resource"
-            )
+        # Security check: verify this belongs to the logged-in user if it's not a guest job
+        if job.get("user_id"):
+            if not user or job["user_id"] != user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied to this resource"
+                )
             
         # Fetch matching images
         images_res = supabase.table("dataset_images").select("*").eq("job_id", job_id).execute()
