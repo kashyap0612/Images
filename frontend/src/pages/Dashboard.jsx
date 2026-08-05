@@ -13,6 +13,10 @@ export default function Dashboard({ session }) {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
   const fetchJobs = async () => {
+    if (!session) {
+      setFetching(false)
+      return
+    }
     try {
       const response = await fetch(`${API_URL}/api/jobs`, {
         headers: {
@@ -45,12 +49,16 @@ export default function Dashboard({ session }) {
     setError('')
 
     try {
+      const headers = {
+        'Content-Type': 'application/json'
+      }
+      if (session) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+
       const response = await fetch(`${API_URL}/api/jobs`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
+        headers,
         body: JSON.stringify({ query: query.trim() })
       })
 

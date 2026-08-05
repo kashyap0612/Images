@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { KeyRound, Mail, Sparkles } from 'lucide-react'
 
@@ -131,10 +132,18 @@ export default function Login() {
           <button 
             onClick={() => { setUseOtp(!useOtp); setError(''); setMessage(''); }} 
             className="btn btn-secondary" 
-            style={{ width: '100%', fontSize: '0.85rem' }}
+            style={{ width: '100%', fontSize: '0.85rem', marginBottom: '10px' }}
           >
             {useOtp ? 'Use Password Sign In' : 'Use Passwordless Email OTP'}
           </button>
+          
+          <Link 
+            to="/"
+            className="btn"
+            style={{ width: '100%', fontSize: '0.85rem', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', display: 'block', textAlign: 'center', textDecoration: 'none' }}
+          >
+            Continue as Guest (Limited Access)
+          </Link>
         </div>
       </div>
     </div>

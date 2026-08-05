@@ -23,7 +23,20 @@ function Navbar({ session }) {
     await supabase.auth.signOut()
   }
 
-  if (!session) return null
+  if (!session) {
+    return (
+      <nav className="navbar">
+        <Link to="/" className="nav-brand">
+          AutoDataset
+        </Link>
+        <div className="nav-links">
+          <Link to="/login" className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
+            Login / Sign up
+          </Link>
+        </div>
+      </nav>
+    )
+  }
 
   return (
     <nav className="navbar">
@@ -94,11 +107,7 @@ export default function App() {
             />
             <Route 
               path="/" 
-              element={
-                <ProtectedRoute session={session}>
-                  <Dashboard session={session} />
-                </ProtectedRoute>
-              } 
+              element={<Dashboard session={session} />} 
             />
             <Route 
               path="/history" 
@@ -110,11 +119,7 @@ export default function App() {
             />
             <Route 
               path="/dataset/:id" 
-              element={
-                <ProtectedRoute session={session}>
-                  <DatasetView session={session} />
-                </ProtectedRoute>
-              } 
+              element={<DatasetView session={session} />} 
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

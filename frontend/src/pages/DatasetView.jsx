@@ -16,10 +16,12 @@ export default function DatasetView({ session }) {
 
   const fetchJobDetails = async () => {
     try {
+      const headers = {}
+      if (session) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
       const response = await fetch(`${API_URL}/api/jobs/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+        headers
       })
       
       if (!response.ok) {
